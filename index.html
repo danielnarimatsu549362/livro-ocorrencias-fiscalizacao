@@ -531,7 +531,7 @@
   
   async function loadRegistros() {
   try {
-    const response = await fetch('SUA_URL_DO_APPS_SCRIPT'); // Cole a URL do passo anterior
+    const response = await fetch('https://script.google.com/macros/s/AKfycbzgik7Q4Npwhsk9M4ivxXAB-PK_QDKQvtBVWzalOTuGqbuTz3MnfBUzn2aJsAzsjGq4/exec'); // Cole a URL do passo anterior
     registros = await response.json();
   } catch (e) {
     console.error("Erro ao carregar registros:", e);
@@ -544,7 +544,7 @@
 
   async function persist() {
   try {
-    await fetch('SUA_URL_DO_APPS_SCRIPT', {
+    await fetch('https://script.google.com/macros/s/AKfycbzgik7Q4Npwhsk9M4ivxXAB-PK_QDKQvtBVWzalOTuGqbuTz3MnfBUzn2aJsAzsjGq4/exec', {
       method: 'POST',
       mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
@@ -634,7 +634,7 @@
 
   // Função para apagar um registro
   async function apagarRegistro(id) {
-  await fetch(`SUA_URL_DO_APPS_SCRIPT?id=${id}`, { method: 'DELETE', mode: 'no-cors' });
+  await fetch(`https://script.google.com/macros/s/AKfycbzgik7Q4Npwhsk9M4ivxXAB-PK_QDKQvtBVWzalOTuGqbuTz3MnfBUzn2aJsAzsjGq4/exec?id=${id}`, { method: 'DELETE', mode: 'no-cors' });
   registros = registros.filter(r => r.id !== id);
   render();
   toast('Registro apagado da nuvem.');
