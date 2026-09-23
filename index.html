@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1B2A4A">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ocorrências">
+<link rel="manifest" href="manifest.json">
+<title>Livro de Ocorrências — Relatórios de Fiscalização</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@500;600;700&family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap');
+
+  :root{
+    --navy:#1B2A4A;
+    --navy-deep:#101A30;
+    --paper:#FAF7F0;
+    --paper-dim:#F1ECE0;
+    --stamp:#B23A2E;
+    --stamp-dim:#e8c9c4;
+    --line:#D8D1BF;
+    --ink:#26314A;
+    --ink-soft:#5C6478;
+    --ok:#3E6B4F;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(27,42,74,0.05) 1px, transparent 0);
+    background-size: 22px 22px;
+  }
+
+  .sheet{
+    max-width:980px;
+    margin:0 auto;
+    padding:32px 24px 80px;
+  }
+
+  /* ---------- Header / masthead ---------- */
+  header.masthead{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    border-bottom:3px solid var(--navy);
+    padding-bottom:16px;
+    margin-bottom:28px;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+  header.masthead .title-block{display:flex; align-items:center; gap:14px;}
+  .seal{
+    width:52px;height:52px;border-radius:50%;
+    border:2.5px solid var(--stamp);
+    display:flex;align-items:center;justify-content:center;
+    color:var(--stamp);
+    font-family:'Roboto Slab',serif;
+    font-weight:700;
+    font-size:11px;
+    letter-spacing:0.5px;
+    transform:rotate(-8deg);
+    flex-shrink:0;
+    background:rgba(178,58,46,0.03);
+  }
+  h1{
+    font-family:'Roboto Slab',serif;
+    font-weight:700;
+    font-size:26px;
+    margin:0;
+    color:var(--navy-deep);
+    letter-spacing:0.2px;
+  }
+  header.masthead .subtitle{
+    font-size:12.5px;
+    color:var(--ink-soft);
+    margin-top:4px;
+    font-family:'Roboto Mono',monospace;
+  }
+  .doc-number{
+    font-family:'Roboto Mono',monospace;
+    font-size:12px;
+    color:var(--ink-soft);
+    text-align:right;
+  }
+  .doc-number b{color:var(--navy);}
+
+  /* ---------- Cards ---------- */
+  .card{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:4px;
+    box-shadow:0 1px 0 rgba(27,42,74,0.04);
+    margin-bottom:24px;
+  }
+  .card-head{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:14px 18px;
+    border-bottom:1px solid var(--line);
+    background:var(--paper-dim);
+    border-radius:4px 4px 0 0;
+  }
+  .card-head .idx{
+    font-family:'Roboto Mono',monospace;
+    font-size:11px;
+    color:#fff;
+    background:var(--navy);
+    padding:2px 7px;
+    border-radius:2px;
+    letter-spacing:0.5px;
+  }
+  .card-head h2{
+    font-family:'Roboto Slab',serif;
+    font-size:14.5px;
+    font-weight:600;
+    margin:0;
+    color:var(--navy-deep);
+    text-transform:uppercase;
+    letter-spacing:0.4px;
+  }
+  .card-body{padding:18px;}
+
+  /* ---------- Form ---------- */
+  .grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+  }
+  .field{display:flex; flex-direction:column; gap:6px;}
+  .field.full{grid-column:1/-1;}
+
+  .chip-group{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .chip{
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:13px;
+    padding:8px 15px;
+    border-radius:20px;
+    border:1.5px solid var(--line);
+    background:var(--paper);
+    color:var(--ink-soft);
+    cursor:pointer;
+    transition:all .12s;
+  }
+  .chip:hover{border-color:var(--navy); color:var(--navy);}
+  .chip.selected{
+    background:var(--navy);
+    border-color:var(--navy);
+    color:#fff;
+  }
+  .chip.selected:hover{background:var(--navy-deep);}
+  .chip-selected{
+    font-size:12px;
+    color:var(--ink-soft);
+    margin-top:8px;
+    font-style:italic;
+  }
+
+  label{
+    font-size:11.5px;
+    font-weight:600;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+    letter-spacing:0.6px;
+  }
+  input[type="date"], input[type="text"], textarea, select{
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    padding:9px 11px;
+    border:1px solid var(--line);
+    border-radius:3px;
+    background:var(--paper);
+    color:var(--ink);
+    outline:none;
+    transition:border-color .15s, background .15s;
+  }
+  input:focus, textarea:focus, select:focus{
+    border-color:var(--navy);
+    background:#fff;
+  }
+  textarea{resize:vertical; min-height:70px; font-family:'Inter',sans-serif;}
+
+  .btn{
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:13.5px;
+    padding:10px 18px;
+    border-radius:3px;
+    border:1.5px solid transparent;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    transition:transform .1s, box-shadow .15s, background .15s;
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn-primary{background:var(--navy); color:#fff;}
+  .btn-primary:hover{background:var(--navy-deep);}
+  .btn-stamp{background:var(--stamp); color:#fff;}
+  .btn-stamp:hover{background:#8f2d24;}
+  .btn-ghost{background:transparent; border-color:var(--line); color:var(--ink-soft);}
+  .btn-ghost:hover{border-color:var(--navy); color:var(--navy);}
+  .btn-danger{background:transparent; color:var(--stamp); border:none; padding:6px 8px; font-size:12px;}
+  .btn-danger:hover{background:var(--stamp-dim); border-radius:3px;}
+  .confirm-del-group{display:inline-flex; gap:6px; align-items:center;}
+  .btn-confirm{background:var(--stamp); color:#fff; padding:6px 12px; font-size:12px; border-radius:3px;}
+  .btn-confirm:hover{background:#8f2d24;}
+  .btn-cancel{padding:6px 12px; font-size:12px;}
+  .btn:disabled{opacity:0.45; cursor:not-allowed;}
+
+  .form-actions{
+    display:flex; justify-content:flex-end; gap:10px; margin-top:16px;
+  }
+
+  /* ---------- Filters ---------- */
+  .filter-row{
+    display:flex;
+    gap:14px;
+    flex-wrap:wrap;
+    align-items:flex-end;
+  }
+  .filter-row .field{min-width:150px;}
+  .filter-actions{display:flex; gap:10px; margin-left:auto; align-items:flex-end;}
+
+  /* ---------- Table ---------- */
+  .table-wrap{overflow-x:auto;}
+  table{width:100%; border-collapse:collapse; font-size:13.5px;}
+  thead th{
+    text-align:left;
+    font-family:'Roboto Mono',monospace;
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    color:var(--ink-soft);
+    padding:10px 12px;
+    border-bottom:2px solid var(--navy);
+    white-space:nowrap;
+  }
+  tbody td{
+    padding:12px;
+    border-bottom:1px solid var(--line);
+    vertical-align:top;
+  }
+  tbody tr:hover{background:var(--paper-dim);}
+  .col-data{font-family:'Roboto Mono',monospace; white-space:nowrap; color:var(--navy-deep); font-weight:500;}
+  .col-fiscais{color:var(--ink); font-weight:500;}
+  .tag-assunto{
+    display:inline-block;
+    background:var(--paper-dim);
+    border:1px solid var(--line);
+    color:var(--navy-deep);
+    padding:3px 9px;
+    border-radius:20px;
+    font-size:11.5px;
+    font-weight:600;
+    white-space:nowrap;
+  }
+  .col-desc{color:var(--ink-soft); max-width:340px; line-height:1.45;}
+  .col-endereco{
+    font-size:11px;
+    color:var(--ink-soft);
+    margin-top:5px;
+    line-height:1.35;
+  }
+  .col-actions{text-align:right; white-space:nowrap;}
+
+  .empty-state{
+    text-align:center;
+    padding:48px 20px;
+    color:var(--ink-soft);
+  }
+  .empty-state .stamp-mark{
+    font-family:'Roboto Slab',serif;
+    font-size:13px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    border:2px solid var(--line);
+    display:inline-block;
+    padding:10px 20px;
+    border-radius:3px;
+    color:var(--ink-soft);
+    margin-bottom:10px;
+    transform:rotate(-2deg);
+  }
+
+  .count-strip{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:10px 18px;
+    font-family:'Roboto Mono',monospace;
+    font-size:11.5px;
+    color:var(--ink-soft);
+    border-top:1px solid var(--line);
+    background:var(--paper-dim);
+  }
+
+  .toast{
+    position:fixed;
+    bottom:24px; left:50%;
+    transform:translateX(-50%) translateY(20px);
+    background:var(--navy-deep);
+    color:#fff;
+    padding:12px 20px;
+    border-radius:4px;
+    font-size:13.5px;
+    font-weight:500;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .2s, transform .2s;
+    z-index:50;
+    box-shadow:0 8px 24px rgba(0,0,0,0.25);
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  @media (max-width:640px){
+    .grid{grid-template-columns:1fr;}
+    header.masthead{flex-direction:column; align-items:flex-start;}
+    .doc-number{text-align:left;}
+    .filter-actions{margin-left:0; width:100%;}
+    .col-desc{max-width:180px;}
+  }
+
+  :focus-visible{outline:2px solid var(--stamp); outline-offset:2px;}
+</style>
+</head>
+<body>
+
+<div class="sheet">
+
+  <header class="masthead">
+    <div class="title-block">
+      <div class="seal">FISC<br>AL</div>
+      <div>
+        <h1>Livro de Ocorrências</h1>
+        <div class="subtitle">registro de relatórios de fiscalização</div>
+      </div>
+    </div>
+    <div class="doc-number">Registros ativos: <b id="totalCount">0</b></div>
+  </header>
+
+  <!-- Novo registro -->
+  <section class="card">
+    <div class="card-head">
+      <span class="idx">NOVO</span>
+      <h2>Lançar novo registro</h2>
+    </div>
+    <div class="card-body">
+      <div class="grid">
+        <div class="field">
+          <label for="fData">Data</label>
+          <input type="date" id="fData">
+        </div>
+        <div class="field full">
+          <label>Fiscais</label>
+          <div class="chip-group" id="fFiscaisChips">
+            <button type="button" class="chip" data-nome="Amanda">Amanda</button>
+            <button type="button" class="chip" data-nome="Daniel">Daniel</button>
+            <button type="button" class="chip" data-nome="Henrique">Henrique</button>
+            <button type="button" class="chip" data-nome="Valeska">Valeska</button>
+            <button type="button" class="chip" data-nome="Jeferson">Jeferson</button>
+          </div>
+          <div class="chip-selected" id="fFiscaisResumo">Nenhum fiscal selecionado</div>
+        </div>
+        <div class="field full">
+          <label>Assunto</label>
+          <div class="chip-group" id="fAssuntoChips">
+            <button type="button" class="chip" data-nome="Feira Diurna">Feira Diurna</button>
+            <button type="button" class="chip" data-nome="Feira Noturna">Feira Noturna</button>
+            <button type="button" class="chip" data-nome="Feira da Barganha">Feira da Barganha</button>
+            <button type="button" class="chip" data-nome="Feira do Colonial">Feira do Colonial</button>
+            <button type="button" class="chip" data-nome="Trailer">Trailer</button>
+            <button type="button" class="chip" data-nome="Camelódromo">Camelódromo</button>
+          </div>
+          <div class="chip-selected" id="fAssuntoResumo">Nenhum assunto selecionado</div>
+        </div>
+        <div class="field full" id="fEnderecoWrap" style="display:none;">
+          <label for="fEndereco">Endereço da feira</label>
+          <input type="text" id="fEndereco" placeholder="Endereço onde ocorre a feira">
+        </div>
+        <div class="field full">
+          <label for="fDescricao">Descrição</label>
+          <textarea id="fDescricao" placeholder="Detalhes da ocorrência..."></textarea>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-ghost" id="btnLimpar" type="button">Limpar</button>
+        <button class="btn btn-stamp" id="btnSalvar" type="button">Registrar ocorrência</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Filtros -->
+  <section class="card">
+    <div class="card-head">
+      <span class="idx">FILTRO</span>
+      <h2>Consultar registros</h2>
+    </div>
+    <div class="card-body">
+      <div class="filter-row">
+        <div class="field">
+          <label for="filData1">De</label>
+          <input type="date" id="filData1">
+        </div>
+        <div class="field">
+          <label for="filData2">Até</label>
+          <input type="date" id="filData2">
+        </div>
+        <div class="field">
+          <label for="filAssunto">Assunto</label>
+          <select id="filAssunto">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="filter-actions">
+          <button class="btn btn-ghost" id="btnLimparFiltro" type="button">Limpar filtro</button>
+          <button class="btn btn-primary" id="btnRelatorio" type="button">Gerar Relatório</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tabela -->
+  <section class="card">
+    <div class="card-head">
+      <span class="idx" id="listBadge">0</span>
+      <h2>Registros</h2>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Fiscais</th>
+            <th>Assunto</th>
+            <th>Descrição</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tblBody"></tbody>
+      </table>
+    </div>
+    <div id="emptyState" class="empty-state" style="display:none;">
+      <div class="stamp-mark">sem registros</div>
+      <div>Nenhuma ocorrência lançada ainda.</div>
+    </div>
+    <div class="count-strip">
+      <span id="filterSummary">mostrando todos os registros</span>
+      <span id="loadStatus">carregando…</span>
+    </div>
+  </section>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  const STORAGE_KEY = 'relatorios:registros';
+  let registros = [];
+  let loaded = false;
+
+  const $ = id => document.getElementById(id);
+  const tblBody = $('tblBody');
+  const emptyState = $('emptyState');
+  const totalCount = $('totalCount');
+  const listBadge = $('listBadge');
+  const filterSummary = $('filterSummary');
+  const loadStatus = $('loadStatus');
+  const filAssunto = $('filAssunto');
+  const toastEl = $('toast');
+
+  function toast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastEl._t);
+    toastEl._t = setTimeout(()=>toastEl.classList.remove('show'), 2400);
+  }
+
+  function fmtDateBR(iso){
+    if(!iso) return '';
+    const [y,m,d] = iso.split('-');
+    return `${d}/${m}/${y}`;
+  }
+
+  function escapeHtml(s){
+    return (s||'').replace(/[&<>"']/g, c => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[c]));
+  }
+
+  // Camada de armazenamento com fallback automático:
+  // - Dentro do preview de artefatos da Claude, usa window.storage (persistente na nuvem)
+  // - Fora dele (arquivo .html baixado e aberto no navegador do celular), usa localStorage
+  const hasWidgetStorage = (typeof window.storage !== 'undefined') &&
+    window.storage && typeof window.storage.get === 'function';
+
+  async function storageGet(key){
+    if(hasWidgetStorage){
+      try{ return await window.storage.get(key, false); }
+      catch(e){ return null; }
+    }
+    try{
+      const v = localStorage.getItem(key);
+      return v !== null ? { key, value: v, shared:false } : null;
+    }catch(e){ return null; }
+  }
+
+  async function storageSet(key, value){
+    if(hasWidgetStorage){
+      try{ return await window.storage.set(key, value, false); }
+      catch(e){ return null; }
+    }
+    try{
+      localStorage.setItem(key, value);
+      return { key, value, shared:false };
+    }catch(e){ return null; }
+  }
+
+  
+  async function loadRegistros() {
+  try {
+    const response = await fetch('SUA_URL_DO_APPS_SCRIPT'); // Cole a URL do passo anterior
+    registros = await response.json();
+  } catch (e) {
+    console.error("Erro ao carregar registros:", e);
+    registros = [];
+  }
+  loaded = true;
+  loadStatus.textContent = `${registros.length} registro(s) carregado(s) da nuvem`;
+  render();
+}
+
+  async function persist() {
+  try {
+    await fetch('SUA_URL_DO_APPS_SCRIPT', {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(registros[registros.length - 1]) // Envia o último registro adicionado
+    });
+    } catch (e) {
+    console.error("Erro ao salvar:", e);
+    toast('Falha ao salvar na nuvem. Verifique sua conexão.');
+    }
+  }
+
+  function uid(){
+    return 'r_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,8);
+  }
+
+  function populateAssuntoFilter(){
+    const current = filAssunto.value;
+    const assuntos = Array.from(new Set(registros.map(r=>r.assunto).filter(Boolean))).sort((a,b)=>a.localeCompare(b,'pt-BR'));
+    filAssunto.innerHTML = '<option value="">Todos</option>' +
+      assuntos.map(a=>`<option value="${escapeHtml(a)}">${escapeHtml(a)}</option>`).join('');
+    if(assuntos.includes(current)) filAssunto.value = current;
+  }
+
+  function getFiltered(){
+    const d1 = $('filData1').value;
+    const d2 = $('filData2').value;
+    const assunto = filAssunto.value;
+    return registros
+      .filter(r=>{
+        if(d1 && r.data < d1) return false;
+        if(d2 && r.data > d2) return false;
+        if(assunto && r.assunto !== assunto) return false;
+        return true;
+      })
+      .sort((a,b)=> b.data.localeCompare(a.data) || b.criadoEm - a.criadoEm);
+  }
+
+  function render(){
+    populateAssuntoFilter();
+    const filtered = getFiltered();
+
+    totalCount.textContent = registros.length;
+    listBadge.textContent = filtered.length;
+
+    const d1 = $('filData1').value, d2 = $('filData2').value, assunto = filAssunto.value;
+    const parts = [];
+    if(d1) parts.push(`de ${fmtDateBR(d1)}`);
+    if(d2) parts.push(`até ${fmtDateBR(d2)}`);
+    if(assunto) parts.push(`assunto: ${assunto}`);
+    filterSummary.textContent = parts.length ? `filtro ativo — ${parts.join(', ')} — ${filtered.length} de ${registros.length}` : `mostrando todos os registros (${registros.length})`;
+
+    if(!loaded){
+      tblBody.innerHTML = '';
+      emptyState.style.display = 'none';
+      return;
+    }
+
+    if(filtered.length === 0){
+      tblBody.innerHTML = '';
+      emptyState.style.display = 'block';
+      emptyState.querySelector('div:last-child').textContent = registros.length === 0
+        ? 'Nenhuma ocorrência lançada ainda.'
+        : 'Nenhum registro corresponde ao filtro aplicado.';
+      return;
+    }
+    emptyState.style.display = 'none';
+
+    tblBody.innerHTML = filtered.map(r => `
+      <tr data-id="${r.id}">
+        <td class="col-data">${fmtDateBR(r.data)}</td>
+        <td class="col-fiscais">${escapeHtml(r.fiscais)}</td>
+        <td><span class="tag-assunto">${escapeHtml(r.assunto)}</span>${r.endereco ? `<div class="col-endereco">${escapeHtml(r.endereco)}</div>` : ''}</td>
+        <td class="col-desc">${escapeHtml(r.descricao)}</td>
+        <td class="col-actions">
+          ${pendingDeleteId === r.id ? `
+            <span class="confirm-del-group">
+              <button class="btn btn-danger btn-confirm" data-action="confirm-del" data-id="${r.id}">Confirmar</button>
+              <button class="btn btn-ghost btn-cancel" data-action="cancel-del" data-id="${r.id}">Cancelar</button>
+            </span>
+          ` : `
+            <button class="btn btn-danger" data-action="del" data-id="${r.id}" title="Apagar registro">Apagar</button>
+          `}
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  // Função para apagar um registro
+  async function apagarRegistro(id) {
+  await fetch(`SUA_URL_DO_APPS_SCRIPT?id=${id}`, { method: 'DELETE', mode: 'no-cors' });
+  registros = registros.filter(r => r.id !== id);
+  render();
+  toast('Registro apagado da nuvem.');
+  }
+
+  // --- Novo registro ---
+  let fiscaisSelecionados = [];
+
+  function atualizarResumoFiscais(){
+    const resumo = $('fFiscaisResumo');
+    resumo.textContent = fiscaisSelecionados.length
+      ? fiscaisSelecionados.join(', ')
+      : 'Nenhum fiscal selecionado';
+  }
+
+  $('fFiscaisChips').addEventListener('click', (e)=>{
+    const chip = e.target.closest('.chip');
+    if(!chip) return;
+    const nome = chip.dataset.nome;
+    if(fiscaisSelecionados.includes(nome)){
+      fiscaisSelecionados = fiscaisSelecionados.filter(n=>n!==nome);
+      chip.classList.remove('selected');
+    }else{
+      fiscaisSelecionados.push(nome);
+      chip.classList.add('selected');
+    }
+    atualizarResumoFiscais();
+  });
+
+  let assuntoSelecionado = '';
+  const ASSUNTOS_COM_ENDERECO = ['Feira Diurna', 'Feira Noturna'];
+
+  function atualizarResumoAssunto(){
+    $('fAssuntoResumo').textContent = assuntoSelecionado || 'Nenhum assunto selecionado';
+  }
+
+  function atualizarVisibilidadeEndereco(){
+    const precisaEndereco = ASSUNTOS_COM_ENDERECO.includes(assuntoSelecionado);
+    $('fEnderecoWrap').style.display = precisaEndereco ? '' : 'none';
+    if(!precisaEndereco){ $('fEndereco').value = ''; }
+  }
+
+  $('fAssuntoChips').addEventListener('click', (e)=>{
+    const chip = e.target.closest('.chip');
+    if(!chip) return;
+    const nome = chip.dataset.nome;
+    $('fAssuntoChips').querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'));
+    if(assuntoSelecionado === nome){
+      // Tocar de novo no mesmo assunto desmarca
+      assuntoSelecionado = '';
+    }else{
+      assuntoSelecionado = nome;
+      chip.classList.add('selected');
+    }
+    atualizarResumoAssunto();
+    atualizarVisibilidadeEndereco();
+  });
+
+  function limparForm(){
+    $('fData').value = '';
+    fiscaisSelecionados = [];
+    $('fFiscaisChips').querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'));
+    atualizarResumoFiscais();
+    assuntoSelecionado = '';
+    $('fAssuntoChips').querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'));
+    atualizarResumoAssunto();
+    atualizarVisibilidadeEndereco();
+    $('fDescricao').value = '';
+  }
+
+  $('btnLimpar').addEventListener('click', limparForm);
+
+  $('btnSalvar').addEventListener('click', async ()=>{
+    const data = $('fData').value;
+    const fiscais = fiscaisSelecionados.join(', ');
+    const assunto = assuntoSelecionado;
+    const descricao = $('fDescricao').value.trim();
+    const precisaEndereco = ASSUNTOS_COM_ENDERECO.includes(assunto);
+    const endereco = precisaEndereco ? $('fEndereco').value.trim() : '';
+
+    if(!data || !fiscais || !assunto || !descricao){
+      toast('Preencha todos os campos, selecione ao menos um fiscal e um assunto.');
+      return;
+    }
+    if(precisaEndereco && !endereco){
+      toast('Informe o endereço da feira.');
+      return;
+    }
+
+    registros.push({
+      id: uid(),
+      data, fiscais, assunto, descricao, endereco,
+      criadoEm: Date.now()
+    });
+
+    $('btnSalvar').disabled = true;
+    await persist();
+    $('btnSalvar').disabled = false;
+    limparForm();
+    render();
+    toast('Registro lançado com sucesso.');
+  });
+
+  // --- Apagar registro (confirmação inline, sem depender de dialogs nativos) ---
+  let pendingDeleteId = null;
+
+  tblBody.addEventListener('click', async (e)=>{
+    const btn = e.target.closest('[data-action]');
+    if(!btn) return;
+    const id = btn.dataset.id;
+
+    if(btn.dataset.action === 'del'){
+      // Primeiro clique: pede confirmação inline
+      pendingDeleteId = id;
+      render();
+      return;
+    }
+
+    if(btn.dataset.action === 'confirm-del'){
+      registros = registros.filter(r=>r.id!==id);
+      pendingDeleteId = null;
+      await persist();
+      render();
+      toast('Registro apagado.');
+      return;
+    }
+
+    if(btn.dataset.action === 'cancel-del'){
+      pendingDeleteId = null;
+      render();
+      return;
+    }
+  });
+
+  // --- Filtros ---
+  ['filData1','filData2'].forEach(id=> $(id).addEventListener('change', render));
+  filAssunto.addEventListener('change', render);
+  $('btnLimparFiltro').addEventListener('click', ()=>{
+    $('filData1').value = '';
+    $('filData2').value = '';
+    filAssunto.value = '';
+    render();
+  });
+
+  // --- Gerar Relatório (abre página HTML imprimível em nova aba) ---
+  $('btnRelatorio').addEventListener('click', ()=>{
+    try{
+      gerarRelatorio();
+    }catch(err){
+      console.error(err);
+      toast('Não foi possível gerar o relatório: ' + err.message);
+    }
+  });
+
+  function gerarRelatorio(){
+    const filtered = getFiltered();
+    if(filtered.length === 0){
+      toast('Nenhum registro para incluir no relatório.');
+      return;
+    }
+
+    const d1 = $('filData1').value, d2 = $('filData2').value, assunto = filAssunto.value;
+    const filtroTexto = [
+      d1 ? `De ${fmtDateBR(d1)}` : null,
+      d2 ? `até ${fmtDateBR(d2)}` : null,
+      assunto ? `Assunto: ${assunto}` : null
+    ].filter(Boolean).join(' &nbsp;|&nbsp; ') || 'Todos os registros (sem filtro)';
+    const geradoEm = new Date().toLocaleString('pt-BR');
+
+    const linhas = filtered.map(r => `
+      <tr>
+        <td class="c-data">${fmtDateBR(r.data)}</td>
+        <td class="c-fiscais">${escapeHtml(r.fiscais)}</td>
+        <td class="c-assunto">${escapeHtml(r.assunto)}${r.endereco ? `<div class="c-endereco">${escapeHtml(r.endereco)}</div>` : ''}</td>
+        <td class="c-desc">${escapeHtml(r.descricao)}</td>
+      </tr>`).join('');
+
+    const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Relatório de Fiscalização</title>
+<style>
+  @page { size: A4 landscape; margin: 18mm 14mm; }
+  *{box-sizing:border-box;}
+  body{
+    font-family:'Georgia','Times New Roman',serif;
+    color:#1B2A4A;
+    margin:0;
+    padding:28px 34px 60px;
+    background:#fff;
+  }
+  .toolbar{
+    display:flex; justify-content:flex-end; gap:10px;
+    margin-bottom:20px;
+  }
+  .toolbar button{
+    font-family:'Helvetica','Arial',sans-serif;
+    font-weight:600;
+    font-size:13.5px;
+    padding:9px 18px;
+    border-radius:3px;
+    border:1.5px solid #1B2A4A;
+    background:#1B2A4A;
+    color:#fff;
+    cursor:pointer;
+  }
+  .toolbar button:hover{ background:#101A30; }
+  header{
+    border-bottom:3px solid #1B2A4A;
+    padding-bottom:12px;
+    margin-bottom:6px;
+  }
+  h1{
+    font-size:21px;
+    margin:0 0 4px;
+    letter-spacing:0.2px;
+  }
+  .meta{
+    font-family:'Helvetica','Arial',sans-serif;
+    font-size:11.5px;
+    color:#5C6478;
+  }
+  .meta .filtro{ margin-top:4px; }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:18px;
+    font-family:'Helvetica','Arial',sans-serif;
+    font-size:12px;
+  }
+  thead th{
+    text-align:left;
+    text-transform:uppercase;
+    letter-spacing:0.4px;
+    font-size:10px;
+    color:#fff;
+    background:#1B2A4A;
+    padding:9px 10px;
+  }
+  tbody td{
+    padding:9px 10px;
+    border-bottom:1px solid #D8D1BF;
+    vertical-align:top;
+  }
+  tbody tr:nth-child(even){ background:#F7F4EB; }
+  .c-data{ white-space:nowrap; font-weight:600; width:75px; }
+  .c-fiscais{ width:150px; }
+  .c-assunto{ width:130px; }
+  .c-endereco{ font-size:10px; color:#5C6478; margin-top:3px; }
+  .c-desc{ color:#333; line-height:1.4; }
+  footer{
+    margin-top:22px;
+    font-family:'Helvetica','Arial',sans-serif;
+    font-size:10.5px;
+    color:#5C6478;
+    text-align:right;
+  }
+  @media print{
+    .toolbar{ display:none; }
+    body{ padding:0; }
+  }
+</style>
+</head>
+<body>
+  <div class="toolbar">
+    <button onclick="window.print()">Imprimir / Salvar como PDF</button>
+  </div>
+  <header>
+    <h1>Livro de Ocorrências — Relatório de Fiscalização</h1>
+    <div class="meta">
+      <div class="filtro">${filtroTexto}</div>
+    </div>
+  </header>
+  <table>
+    <thead>
+      <tr><th>Data</th><th>Fiscais</th><th>Assunto</th><th>Descrição</th></tr>
+    </thead>
+    <tbody>${linhas}</tbody>
+  </table>
+  <footer>Gerado em ${geradoEm} &nbsp;|&nbsp; Total de registros: ${filtered.length}</footer>
+</body>
+</html>`;
+
+    const win = window.open('', '_blank');
+    if(!win){
+      toast('Não foi possível abrir a nova aba. Verifique se pop-ups estão bloqueados para esta página.');
+      return;
+    }
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
+  }
+
+  loadRegistros();
+})();
+</script>
+
+</body>
+</html>
