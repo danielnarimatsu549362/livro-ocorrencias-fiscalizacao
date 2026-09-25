@@ -141,6 +141,48 @@
     flex-wrap:wrap;
     gap:8px;
   }
+  .chip-panel{
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:12px;
+    background:var(--paper-dim);
+    margin-top:2px;
+  }
+  .dropdown-toggle{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    width:100%;
+    font-family:'Inter',sans-serif;
+    font-weight:500;
+    font-size:14px;
+    padding:10px 14px;
+    border-radius:3px;
+    border:1px solid var(--line);
+    background:var(--paper);
+    color:var(--ink);
+    cursor:pointer;
+    text-align:left;
+  }
+  .dropdown-toggle:hover{border-color:var(--navy);}
+  .dropdown-toggle.open{
+    border-color:var(--navy);
+    border-bottom-left-radius:0;
+    border-bottom-right-radius:0;
+  }
+  .dropdown-toggle .chevron{
+    color:var(--ink-soft);
+    transition:transform .15s;
+    font-size:11px;
+  }
+  .dropdown-toggle.open .chevron{transform:rotate(180deg);}
+  .dropdown-toggle #fFiscaisBtnLabel,
+  .dropdown-toggle #fAssuntoBtnLabel{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .chip-panel.show{ display:flex !important; }
   .chip{
     font-family:'Inter',sans-serif;
     font-weight:600;
@@ -364,20 +406,27 @@
         </div>
         <div class="field full">
           <label>Fiscais</label>
-          <div class="chip-group" id="fFiscaisChips">
+          <button type="button" class="dropdown-toggle" id="btnToggleFiscais">
+            <span id="fFiscaisBtnLabel">Selecionar fiscais</span>
+            <span class="chevron">▾</span>
+          </button>
+          <div class="chip-group chip-panel" id="fFiscaisChips" style="display:none;">
             <button type="button" class="chip" data-nome="Amanda">Amanda</button>
             <button type="button" class="chip" data-nome="Daniel">Daniel</button>
             <button type="button" class="chip" data-nome="Henrique">Henrique</button>
             <button type="button" class="chip" data-nome="Valeska">Valeska</button>
             <button type="button" class="chip" data-nome="Jeferson">Jeferson</button>
-             <button type="button" class="chip" data-nome="Leonel">Leonel</button>
+            <button type="button" class="chip" data-nome="Leonel">Leonel</button>
           </div>
-          <div class="chip-selected" id="fFiscaisResumo">Nenhum fiscal selecionado</div>
         </div>
         <div class="field full">
           <label>Assunto</label>
-          <div class="chip-group" id="fAssuntoChips">
-            <button type="button" class="chip" data-nome="Feira Diurna">Feira Diurna</button>
+          <button type="button" class="dropdown-toggle" id="btnToggleAssunto">
+            <span id="fAssuntoBtnLabel">Selecionar assunto</span>
+            <span class="chevron">▾</span>
+          </button>
+          <div class="chip-group chip-panel" id="fAssuntoChips" style="display:none;">
+            <button type="button" class="chip" data-nome="Feira Livre">Feira Livre</button>
             <button type="button" class="chip" data-nome="Feira Noturna">Feira Noturna</button>
             <button type="button" class="chip" data-nome="Feira da Barganha">Feira da Barganha</button>
             <button type="button" class="chip" data-nome="Feira do Colonial">Feira do Colonial</button>
@@ -385,11 +434,36 @@
             <button type="button" class="chip" data-nome="Camelódromo">Camelódromo</button>
             <button type="button" class="chip" data-nome="Atendimento">Atendimento</button>
           </div>
-          <div class="chip-selected" id="fAssuntoResumo">Nenhum assunto selecionado</div>
         </div>
-        <div class="field full" id="fEnderecoWrap" style="display:none;">
-          <label for="fEndereco">Endereço da feira</label>
-          <input type="text" id="fEndereco" placeholder="Endereço onde ocorre a feira">
+        <div class="field full" id="fFeiraLivreWrap" style="display:none;">
+          <label for="fDiaFeira">Dia da feira</label>
+          <select id="fDiaFeira">
+            <option value="">Selecione o dia</option>
+            <option value="Terça-feira">Terça-feira</option>
+            <option value="Quarta-feira">Quarta-feira</option>
+            <option value="Quinta-feira">Quinta-feira</option>
+            <option value="Sexta-feira">Sexta-feira</option>
+            <option value="Sábado">Sábado</option>
+            <option value="Domingo">Domingo</option>
+          </select>
+        </div>
+        <div class="field full" id="fEnderecoFeiraLivreWrap" style="display:none;">
+          <label for="fEnderecoFeiraLivre">Endereço</label>
+          <select id="fEnderecoFeiraLivre">
+            <option value="">Selecione o endereço</option>
+          </select>
+        </div>
+        <div class="field full" id="fFeiraNoturnaWrap" style="display:none;">
+          <label>Endereço</label>
+          <div class="chip-group" id="fEnderecoNoturnaChips">
+            <button type="button" class="chip" data-nome="Centro da Juventude">Centro da Juventude</button>
+            <button type="button" class="chip" data-nome="Pq da Cidade">Pq da Cidade</button>
+            <button type="button" class="chip" data-nome="Jd Satélite">Jd Satélite</button>
+          </div>
+        </div>
+        <div class="field full" id="fTrailerWrap" style="display:none;">
+          <label for="fEnderecoTrailer">Endereço do Trailer</label>
+          <input type="text" id="fEnderecoTrailer" placeholder="Endereço onde está o trailer">
         </div>
         <div class="field full">
           <label for="fDescricao">Descrição</label>
@@ -469,7 +543,9 @@
 
 <script>
 (function(){
-  const STORAGE_KEY = 'relatorios:registros';
+  // ===== URL do backend (Google Apps Script) =====
+  const API_URL = 'https://script.google.com/macros/s/AKfycbzgik7Q4Npwhsk9M4ivxXAB-PK_QDKQvtBVWzalOTuGqbuTz3MnfBUzn2aJsAzsjGq4/exec';
+
   let registros = [];
   let loaded = false;
 
@@ -502,59 +578,31 @@
     }[c]));
   }
 
-  // Camada de armazenamento com fallback automático:
-  // - Dentro do preview de artefatos da Claude, usa window.storage (persistente na nuvem)
-  // - Fora dele (arquivo .html baixado e aberto no navegador do celular), usa localStorage
-  const hasWidgetStorage = (typeof window.storage !== 'undefined') &&
-    window.storage && typeof window.storage.get === 'function';
-
-  async function storageGet(key){
-    if(hasWidgetStorage){
-      try{ return await window.storage.get(key, false); }
-      catch(e){ return null; }
-    }
-    try{
-      const v = localStorage.getItem(key);
-      return v !== null ? { key, value: v, shared:false } : null;
-    }catch(e){ return null; }
-  }
-
-  async function storageSet(key, value){
-    if(hasWidgetStorage){
-      try{ return await window.storage.set(key, value, false); }
-      catch(e){ return null; }
-    }
-    try{
-      localStorage.setItem(key, value);
-      return { key, value, shared:false };
-    }catch(e){ return null; }
-  }
-
-  
-  async function loadRegistros() {
-  try {
-    const response = await fetch('https://script.google.com/macros/s/AKfycbzgik7Q4Npwhsk9M4ivxXAB-PK_QDKQvtBVWzalOTuGqbuTz3MnfBUzn2aJsAzsjGq4/exec'); // Cole a URL do passo anterior
-    registros = await response.json();
-  } catch (e) {
-    console.error("Erro ao carregar registros:", e);
-    registros = [];
-  }
-  loaded = true;
-  loadStatus.textContent = `${registros.length} registro(s) carregado(s) da nuvem`;
-  render();
-}
-
-  async function persist() {
-  try {
-    await fetch('https://script.google.com/macros/s/AKfycbzgik7Q4Npwhsk9M4ivxXAB-PK_QDKQvtBVWzalOTuGqbuTz3MnfBUzn2aJsAzsjGq4/exec', {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(registros[registros.length - 1]) // Envia o último registro adicionado
-    });
+  // ===== Camada de armazenamento: agora 100% na nuvem via Google Apps Script =====
+  async function loadRegistros(){
+    try {
+      const response = await fetch(API_URL);
+      registros = await response.json();
     } catch (e) {
-    console.error("Erro ao salvar:", e);
-    toast('Falha ao salvar na nuvem. Verifique sua conexão.');
+      console.error("Erro ao carregar registros:", e);
+      registros = [];
+    }
+    loaded = true;
+    loadStatus.textContent = `${registros.length} registro(s) carregado(s) da nuvem`;
+    render();
+  }
+
+  async function persist(){
+    try {
+      await fetch(API_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(registros[registros.length - 1])
+      });
+    } catch (e) {
+      console.error("Erro ao salvar:", e);
+      toast('Falha ao salvar na nuvem. Verifique sua conexão.');
     }
   }
 
@@ -634,22 +682,13 @@
     `).join('');
   }
 
-  // Função para apagar um registro
-  async function apagarRegistro(id) {
-  await fetch(`https://script.google.com/macros/s/AKfycbzgik7Q4Npwhsk9M4ivxXAB-PK_QDKQvtBVWzalOTuGqbuTz3MnfBUzn2aJsAzsjGq4/exec?id=${id}`, { method: 'DELETE', mode: 'no-cors' });
-  registros = registros.filter(r => r.id !== id);
-  render();
-  toast('Registro apagado da nuvem.');
-  }
-
   // --- Novo registro ---
   let fiscaisSelecionados = [];
 
   function atualizarResumoFiscais(){
-    const resumo = $('fFiscaisResumo');
-    resumo.textContent = fiscaisSelecionados.length
+    $('fFiscaisBtnLabel').textContent = fiscaisSelecionados.length
       ? fiscaisSelecionados.join(', ')
-      : 'Nenhum fiscal selecionado';
+      : 'Selecionar fiscais';
   }
 
   $('fFiscaisChips').addEventListener('click', (e)=>{
@@ -667,17 +706,61 @@
   });
 
   let assuntoSelecionado = '';
-  const ASSUNTOS_COM_ENDERECO = ['Feira Diurna', 'Feira Noturna'];
+
+  // Endereços das feiras livres por dia da semana, conforme escala oficial
+  const FEIRAS_POR_DIA = {
+    'Terça-feira': ['Residencial Tatetuba','Jardim Uirá','Urbanova V','Vila Igualdade','Jardim Azevedo','Jardim Esplanada II'],
+    'Quarta-feira': ['Vila Maria','Jardim São Dimas','Jardim Veneza','Jardim Satélite','Jardim São Vicente','Parque Industrial','Jardim Valparaíba'],
+    'Quinta-feira': ['Santana','Bosque dos Eucaliptos','Jardim das Indústrias','Putim','Jardim das Cerejeiras'],
+    'Sexta-feira': ['Vila Ema','Bosque dos Eucaliptos','Jardim da Granja','Jardim Aquarius','Jardim do Céu'],
+    'Sábado': ['Jardim São José','Jardim Altos do Santana','Residencial Galo Branco','Vila Industrial','Parque Industrial','Vista Verde','Setville'],
+    'Domingo': ['Santana','Jardim São Judas Tadeu','Parque Interlagos','Vila Letônia','Campo dos Alemães','Campos de São José','Jardim Satélite','Jardim Colonial','Parque Novo Horizonte','Cidade Morumbi']
+  };
+
+  let enderecoNoturnoSelecionado = '';
 
   function atualizarResumoAssunto(){
-    $('fAssuntoResumo').textContent = assuntoSelecionado || 'Nenhum assunto selecionado';
+    $('fAssuntoBtnLabel').textContent = assuntoSelecionado || 'Selecionar assunto';
   }
 
   function atualizarVisibilidadeEndereco(){
-    const precisaEndereco = ASSUNTOS_COM_ENDERECO.includes(assuntoSelecionado);
-    $('fEnderecoWrap').style.display = precisaEndereco ? '' : 'none';
-    if(!precisaEndereco){ $('fEndereco').value = ''; }
+    // Esconde todos os blocos condicionais primeiro
+    $('fFeiraLivreWrap').style.display = 'none';
+    $('fEnderecoFeiraLivreWrap').style.display = 'none';
+    $('fFeiraNoturnaWrap').style.display = 'none';
+    $('fTrailerWrap').style.display = 'none';
+
+    if(assuntoSelecionado === 'Feira Livre'){
+      $('fFeiraLivreWrap').style.display = '';
+      if($('fDiaFeira').value){ $('fEnderecoFeiraLivreWrap').style.display = ''; }
+    }else if(assuntoSelecionado === 'Feira Noturna'){
+      $('fFeiraNoturnaWrap').style.display = '';
+    }else if(assuntoSelecionado === 'Trailer'){
+      $('fTrailerWrap').style.display = '';
+    }
+    // Feira da Barganha, Feira do Colonial, Camelódromo e Atendimento: vai direto para Descrição
   }
+
+  $('fDiaFeira').addEventListener('change', ()=>{
+    const dia = $('fDiaFeira').value;
+    const sel = $('fEnderecoFeiraLivre');
+    sel.innerHTML = '<option value="">Selecione o endereço</option>' +
+      (FEIRAS_POR_DIA[dia] || []).map(end => `<option value="${escapeHtml(end)}">${escapeHtml(end)}</option>`).join('');
+    $('fEnderecoFeiraLivreWrap').style.display = dia ? '' : 'none';
+  });
+
+  $('fEnderecoNoturnaChips').addEventListener('click', (e)=>{
+    const chip = e.target.closest('.chip');
+    if(!chip) return;
+    const nome = chip.dataset.nome;
+    $('fEnderecoNoturnaChips').querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'));
+    if(enderecoNoturnoSelecionado === nome){
+      enderecoNoturnoSelecionado = '';
+    }else{
+      enderecoNoturnoSelecionado = nome;
+      chip.classList.add('selected');
+    }
+  });
 
   $('fAssuntoChips').addEventListener('click', (e)=>{
     const chip = e.target.closest('.chip');
@@ -693,6 +776,41 @@
     }
     atualizarResumoAssunto();
     atualizarVisibilidadeEndereco();
+    // Assunto é seleção única: fecha o painel automaticamente após escolher
+    fecharPainel('fAssuntoChips', 'btnToggleAssunto');
+  });
+
+  // --- Controle de abertura/fechamento dos painéis dropdown ---
+  function abrirPainel(panelId, btnId){
+    $(panelId).classList.add('show');
+    $(panelId).style.display = 'flex';
+    $(btnId).classList.add('open');
+  }
+  function fecharPainel(panelId, btnId){
+    $(panelId).classList.remove('show');
+    $(panelId).style.display = 'none';
+    $(btnId).classList.remove('open');
+  }
+  function togglePainel(panelId, btnId){
+    const isOpen = $(panelId).classList.contains('show');
+    // Fecha o outro painel se estiver aberto
+    ['fFiscaisChips','fAssuntoChips'].forEach(id=>{
+      if(id !== panelId) fecharPainel(id, id === 'fFiscaisChips' ? 'btnToggleFiscais' : 'btnToggleAssunto');
+    });
+    if(isOpen){ fecharPainel(panelId, btnId); }
+    else{ abrirPainel(panelId, btnId); }
+  }
+
+  $('btnToggleFiscais').addEventListener('click', ()=> togglePainel('fFiscaisChips','btnToggleFiscais'));
+  $('btnToggleAssunto').addEventListener('click', ()=> togglePainel('fAssuntoChips','btnToggleAssunto'));
+
+  document.addEventListener('click', (e)=>{
+    if(!e.target.closest('#btnToggleFiscais') && !e.target.closest('#fFiscaisChips')){
+      fecharPainel('fFiscaisChips','btnToggleFiscais');
+    }
+    if(!e.target.closest('#btnToggleAssunto') && !e.target.closest('#fAssuntoChips')){
+      fecharPainel('fAssuntoChips','btnToggleAssunto');
+    }
   });
 
   function limparForm(){
@@ -703,8 +821,15 @@
     assuntoSelecionado = '';
     $('fAssuntoChips').querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'));
     atualizarResumoAssunto();
+    $('fDiaFeira').value = '';
+    $('fEnderecoFeiraLivre').innerHTML = '<option value="">Selecione o endereço</option>';
+    enderecoNoturnoSelecionado = '';
+    $('fEnderecoNoturnaChips').querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'));
+    $('fEnderecoTrailer').value = '';
     atualizarVisibilidadeEndereco();
     $('fDescricao').value = '';
+    fecharPainel('fFiscaisChips','btnToggleFiscais');
+    fecharPainel('fAssuntoChips','btnToggleAssunto');
   }
 
   $('btnLimpar').addEventListener('click', limparForm);
@@ -714,15 +839,29 @@
     const fiscais = fiscaisSelecionados.join(', ');
     const assunto = assuntoSelecionado;
     const descricao = $('fDescricao').value.trim();
-    const precisaEndereco = ASSUNTOS_COM_ENDERECO.includes(assunto);
-    const endereco = precisaEndereco ? $('fEndereco').value.trim() : '';
+
+    let endereco = '';
+    let precisaEndereco = false;
+
+    if(assunto === 'Feira Livre'){
+      precisaEndereco = true;
+      const dia = $('fDiaFeira').value;
+      const end = $('fEnderecoFeiraLivre').value;
+      endereco = (dia && end) ? `${dia} — ${end}` : '';
+    }else if(assunto === 'Feira Noturna'){
+      precisaEndereco = true;
+      endereco = enderecoNoturnoSelecionado;
+    }else if(assunto === 'Trailer'){
+      precisaEndereco = true;
+      endereco = $('fEnderecoTrailer').value.trim();
+    }
 
     if(!data || !fiscais || !assunto || !descricao){
       toast('Preencha todos os campos, selecione ao menos um fiscal e um assunto.');
       return;
     }
     if(precisaEndereco && !endereco){
-      toast('Informe o endereço da feira.');
+      toast('Informe o endereço.');
       return;
     }
 
@@ -756,9 +895,15 @@
     }
 
     if(btn.dataset.action === 'confirm-del'){
+      // 1. Avisa a planilha na nuvem para apagar a linha
+      try {
+        await fetch(API_URL + '?id=' + id, { method: 'DELETE', mode: 'no-cors' });
+      } catch (e) {
+        console.error("Erro ao apagar na nuvem:", e);
+      }
+      // 2. Remove da tela
       registros = registros.filter(r=>r.id!==id);
       pendingDeleteId = null;
-      await persist();
       render();
       toast('Registro apagado.');
       return;
